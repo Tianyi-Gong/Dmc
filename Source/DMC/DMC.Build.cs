@@ -8,6 +8,8 @@ public class DMC : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "GameplayAbilities", "GameplayTags", "GameplayTasks", "GoalOrientedActionPlanning" });
+
+		//PublicIncludePaths.AddRange(new string[] { "GoalOrientedActionPlanning/Public" });
 	}
 }
