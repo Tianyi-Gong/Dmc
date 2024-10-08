@@ -9,7 +9,10 @@ void UGoapGoalSet::InitData(AAIController* Controller)
 
 	for (auto GoapGoalConfigData : GoapGoalConfig)
 	{
-		LoadPath.Add(FSoftObjectPath(GoapGoalConfigData.GoapGoalClass->GetClassPathName()));
+		for (auto LoadGoapGoalClass : GoapGoalConfigData.GoapGoalClass)
+		{
+			LoadPath.Add(FSoftObjectPath(LoadGoapGoalClass->GetClassPathName()));
+		}
 	}
 
 	FStreamableManager& Streamable = UAssetManager::GetStreamableManager();
@@ -21,18 +24,23 @@ void UGoapGoalSet::InitData(AAIController* Controller)
 
 			for (auto GoapGoalConfigData : GoapGoalConfig)
 			{
-				UGoapGoal* GoapGoal = NewObject<UGoapGoal>(GetOuter(), GoapGoalConfigData.GoapGoalClass);
-
-				if(GoapGoal)
+				FGoapGoalSubGroup GoapGoalSubGroup;
+				for (auto LoadGoapGoalClass : GoapGoalConfigData.GoapGoalClass)
 				{
-					check(GoapGoal->GoapWorldStateRuntimeSettingClass == GoapWorldStateRuntimeSettingClass)
-					if(GoapGoal->GoapWorldStateRuntimeSettingClass == GoapWorldStateRuntimeSettingClass)
+					UGoapGoal* GoapGoal = NewObject<UGoapGoal>(GetOuter(), LoadGoapGoalClass);
+
+					if (GoapGoal)
 					{
-						GoapGoal->InitGoapState();
-						GoapGoal->InitControlerData(AIController);
-						GoapGoalPool.Add(GoapGoal);
+						check(GoapGoal->GoapWorldStateRuntimeSettingClass == GoapWorldStateRuntimeSettingClass)
+							if (GoapGoal->GoapWorldStateRuntimeSettingClass == GoapWorldStateRuntimeSettingClass)
+							{
+								GoapGoal->InitGoapState();
+								GoapGoal->InitControlerData(AIController);
+								GoapGoalSubGroup.GoapGoalSupGroup.Add(GoapGoal);
+							}
 					}
 				}
+				GoapGoalPool.Add(GoapGoalSubGroup);
 			}
 
 			bIsDataLoaded = true;
@@ -41,13 +49,17 @@ void UGoapGoalSet::InitData(AAIController* Controller)
 
 UGoapGoal* UGoapGoalSet::SelectGoalByWorldState(const FGoapWorldState& GoapWorldState)
 {
-	for (auto GoapGoal : GoapGoalPool)
+	for (auto GoapSubGroup : GoapGoalPool)
 	{
-		int64 CareFlag = ~GoapGoal->Precondition.NotUsedFlag;
-		if((GoapGoal->Precondition.Values & CareFlag) == (GoapWorldState.Values & CareFlag))
+		GoapSubGroup.ShuffleGroup();
+		for(auto GoapGoal : GoapSubGroup.GoapGoalSupGroup)
 		{
-			GoapGoal->SetGoapGoalResult(EGoapGoalResult::InProgress);
-			return GoapGoal;
+			int64 CareFlag = ~GoapGoal->Precondition.NotUsedFlag;
+			if ((GoapGoal->Precondition.Values & CareFlag) == (GoapWorldState.Values & CareFlag))
+			{
+				GoapGoal->SetGoapGoalResult(EGoapGoalResult::InProgress);
+				return GoapGoal;
+			}
 		}
 	}
 
@@ -101,3 +113,16 @@ void UGoapGoalSet::PostEditChangeProperty(struct FPropertyChangedEvent& Property
 	}
 }
 #endif
+
+void FGoapGoalSubGroup::ShuffleGroup()
+{
+	if(GoapGoalSupGroup.Num() <= 1)
+		return;
+
+	for (int index = GoapGoalSupGroup.Num() - 1; index > 0; index--)
+	{
+		int ToIndex = FMath::RandRange(0, index);
+
+		GoapGoalSupGroup.Swap(ToIndex, index);
+	}
+}

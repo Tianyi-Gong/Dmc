@@ -14,6 +14,7 @@ UGoapAgentComponent::UGoapAgentComponent()
 void UGoapAgentComponent::GoapPrivateStateMerageGoapWorldState(const FGoapWorldState& GoapPrivateState, const FGoapWorldState& GoapWorldState, FGoapWorldState& outGoapMerageState)
 {
 	outGoapMerageState.SetValues(( GoapPrivateState.Values & ~GoapPrivateState.SharedFlag ) | ( GoapWorldState.Values & GoapPrivateState.SharedFlag ));
+	outGoapMerageState.SetNotUsedFlag((GoapPrivateState.NotUsedFlag & ~GoapPrivateState.SharedFlag) | (GoapWorldState.NotUsedFlag & GoapPrivateState.SharedFlag));
 }
 
 void UGoapAgentComponent::SetGoapPrivateState(FGameplayTag GamePlayTag, bool Value)
@@ -21,9 +22,21 @@ void UGoapAgentComponent::SetGoapPrivateState(FGameplayTag GamePlayTag, bool Val
 	GoapPrivateState.SetStateValue(GamePlayTag, Value);
 }
 
+bool UGoapAgentComponent::GetGoapPrivateState(FGameplayTag GamePlayTag, bool& Value, bool IgnoreUsedFlag)
+{
+	return GoapPrivateState.GetStateValue(GamePlayTag, Value, IgnoreUsedFlag);
+}
+
 void UGoapAgentComponent::UpdateGoapPrivateState(float DeltaTime)
 {
 	ReceiveUpdateGoapPrivateState(DeltaTime);
+}
+
+void UGoapAgentComponent::OnPreGoapGoalSelect()
+{
+	ReceiveOnPreGoapGoalSelect(this);
+
+	OnPreGoapGoalSelectDelegate.Broadcast(this);
 }
 
 void UGoapAgentComponent::OnGoapGoalSelect()
@@ -31,6 +44,10 @@ void UGoapAgentComponent::OnGoapGoalSelect()
 	ReceiveOnGoapGoalSelect(this);
 
 	OnGoapGoalSelectDelegate.Broadcast(this);
+	if(CurGoapGoal)
+	{
+		CurGoapGoal->OnGoalActive(this);
+	}
 }
 
 void UGoapAgentComponent::BeginPlay()
@@ -104,11 +121,11 @@ void UGoapAgentComponent::UpdateGoapGoalState(float DeltaTime)
 		{
 			CurGoapGoal->SetGoapGoalResult(EGoapGoalResult::Invalid);
 		}
+		OnPreGoapGoalSelect();
 		CurGoapGoal = GoapGoalSet->SelectGoalByWorldState(CurGoapState);
 		if(CurGoapGoal != nullptr)
 		{
 			OnGoapGoalSelect();
-			CurGoapGoal->OnGoalActive(this);
 		}
 
 		if( CurActiveAction != nullptr &&

@@ -1,10 +1,43 @@
 #include "GoapActions\GoapActionAbility.h"
 #include "AbilitySystemInterface.h"
 #include "GameplayAbilitySpec.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "MotionWarpingComponent.h"
 
 UGoapActionAbility::~UGoapActionAbility()
 {
     UnInitAbilityData();
+}
+
+void UGoapActionAbility::MotionWarpingToTarget(FName MotionWarpingTag, FName TargetActorKey)
+{
+    if(MotionWarpingTag == "None" || TargetActorKey == "None" || ControlledPawn == nullptr)
+        return;
+
+    if (UMotionWarpingComponent* MotionWarpingComponent = ControlledPawn->GetComponentByClass<UMotionWarpingComponent>())
+    {
+        if (AIController == nullptr)
+           return;
+
+        UBlackboardComponent* Blackboard = AIController->GetBlackboardComponent();
+
+        if (Blackboard == nullptr)
+           return;
+
+        AActor* TargetActor = Cast<AActor>(Blackboard->GetValueAsObject(TargetActorKey));
+        if (TargetActor == nullptr)
+            return;
+
+        FVector ControllerCharLocation2D = ControlledPawn->GetActorLocation() * FVector(1, 1, 0);
+        FVector TargetActorLocation2D = TargetActor->GetActorLocation() * FVector(1, 1, 0);
+
+        FRotator LockRotator = UKismetMathLibrary::FindLookAtRotation(ControllerCharLocation2D, TargetActorLocation2D);
+        FRotator ControllerCharRotator = ControlledPawn->GetActorRotation();
+
+        float DeltaAngle = FMath::FindDeltaAngleDegrees(ControllerCharRotator.Yaw, LockRotator.Yaw);
+
+        MotionWarpingComponent->AddOrUpdateWarpTargetFromLocationAndRotation(MotionWarpingTag, FVector::ZeroVector, LockRotator);
+    }
 }
 
 void UGoapActionAbility::ActiveAbilityByAbilityGroupTag(FGameplayTag GameplayTag, bool& bResult, FGameplayAbilitySpecHandle& GameplayAbilitySpecHandle)
@@ -40,6 +73,9 @@ void UGoapActionAbility::InitAbilityData()
     if (ControlledPawn)
     {
         IAbilitySystemInterface* AsAbilitySysInterface = Cast<IAbilitySystemInterface>(ControlledPawn);
+        if(AsAbilitySysInterface == nullptr)
+            return;
+
         if (UAbilitySystemComponent* AbilitySystemComponent = AsAbilitySysInterface->GetAbilitySystemComponent())
         {
             GoapAbilitySystemComponent = Cast<UGoapAbilitySystemComponent>(AbilitySystemComponent);
@@ -83,5 +119,20 @@ void UGoapActionAbility::OnAbilityEndDelegate(const FAbilityEndedData& AbilityEn
     if(AbilityEndedData.AbilitySpecHandle == ActiveGameplayAbilitySpecHandle)
     {
         ReciveOnAbilityEndDelegate(ActiveGameplayAbilitySpecHandle, AbilityEndedData.bWasCancelled);
+    }
+}
+
+void UGoapActionAbility::UpdateDynamicCostByGoapState(const FGoapWorldState& GoapWorldState)
+{
+    Super::UpdateDynamicCostByGoapState(GoapWorldState);
+
+    if(bUpdateCostByAbilityGroupCDInfo && CheckAbilityGroupGameplayTag.IsValid())
+    {
+        int CDAbilityCount = 0;
+        int AbilityCount = 0;
+        if(GoapAbilitySystemComponent->GetAbilityGroupInfo(CheckAbilityGroupGameplayTag, CDAbilityCount, AbilityCount))
+        {
+            DynamicCost = CDAbilityCount;
+        }
     }
 }

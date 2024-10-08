@@ -14,7 +14,7 @@ enum class EGoapGoalResult : uint8
 	InProgress
 };
 
-UCLASS(config = Game, BlueprintType, Blueprintable)
+UCLASS(config = Game, BlueprintType, Blueprintable, Abstract)
 class GOALORIENTEDACTIONPLANNING_API UGoapGoal : public UObject
 {
 	GENERATED_BODY()

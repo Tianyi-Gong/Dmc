@@ -4,6 +4,7 @@
 #include "GameFramework/Character.h"
 #include "GameAbilitySystem/GoapAbilitySystemComponent.h"
 #include "AbilitySystemInterface.h"
+#include "AttributeSet/AIAttributeSetBase.h"
 #include "GoapAgentCharacter.generated.h"
 
 UCLASS()
@@ -18,7 +19,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+/**/
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -30,4 +31,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities")
 	UGoapAbilitySystemComponent* AbilitySystemComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities")
+	UAIAttributeSetBase* AIAttributeSetBase;
 };

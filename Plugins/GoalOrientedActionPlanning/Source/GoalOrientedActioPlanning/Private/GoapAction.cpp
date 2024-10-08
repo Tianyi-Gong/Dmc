@@ -16,14 +16,14 @@ UGoapAction::~UGoapAction()
 
 void UGoapAction::AgentGoapStateChange(const FGoapWorldState& PreGoapWorldState, const FGoapWorldState& CurGoapWorldState)
 {
-    if (bCanInterruptGoal)
+    if (bCanInterruptAction)
     {
         int64 diff = (PreGoapWorldState.Values & ~PreGoapWorldState.NotUsedFlag) ^ (CurGoapWorldState.Values & ~CurGoapWorldState.NotUsedFlag);
 
-        for (auto InterruptGoalValue : InterruptGoalValueConfig)
+        for (auto InterruptActionValue : InterruptActionValueConfig)
         {
-            bool CanInterruptGoal = false;
-            for (auto& [StateKey, StateValue] : InterruptGoalValue.StateValueConfig)
+            bool CanInterruptAction = false;
+            for (auto& [StateKey, StateValue] : InterruptActionValue.StateValueConfig)
             {
                 const int DefaultOffset = -1;
                 int Offset = CurGoapWorldState.NamesTable.FindRef(StateKey, DefaultOffset);
@@ -38,17 +38,17 @@ void UGoapAction::AgentGoapStateChange(const FGoapWorldState& PreGoapWorldState,
 
                     if ((bool)(CurGoapWorldState.Values & mask) == StateValue.bStatValue)
                     {
-                        CanInterruptGoal = true;
+                        CanInterruptAction = true;
                     }
                     else
                     {
-                        CanInterruptGoal = false;
+                        CanInterruptAction = false;
                         break;
                     }
                 }
             }
 
-            if (CanInterruptGoal &&
+            if (CanInterruptAction &&
                 (GoapActionResult == EGoapActionResult::InProgress ||
                  GoapActionResult == EGoapActionResult::Invalid))
             {

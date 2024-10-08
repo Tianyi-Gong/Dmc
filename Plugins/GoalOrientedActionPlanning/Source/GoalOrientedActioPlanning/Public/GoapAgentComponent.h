@@ -8,6 +8,7 @@
 #include "Runtime\AIModule\Classes\BehaviorTree\BlackboardData.h"
 #include "GoapAgentComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPreGoapGoalSelectDelegate, UGoapAgentComponent*, GoapAgent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGoapGoalSelectDelegate, UGoapAgentComponent* , GoapAgent);
 
 UCLASS(config = Game, BlueprintType, Blueprintable, meta = (BlueprintSpawnableComponent))
@@ -67,9 +68,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetGoapPrivateState(FGameplayTag GamePlayTag, bool Value);
 
+	UFUNCTION()
+	bool GetGoapPrivateState(FGameplayTag GamePlayTag, bool& Value , bool IgnoreUsedFlag = false);
+
 	virtual void UpdateGoapPrivateState(float DeltaTime);
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "UpdateGoapPrivateState"))
 	void ReceiveUpdateGoapPrivateState(float DeltaTime);
+
+	virtual void OnPreGoapGoalSelect();
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "PreGoapGoalSelect"))
+	void ReceiveOnPreGoapGoalSelect(UGoapAgentComponent* GoapAgent);
 
 	virtual void OnGoapGoalSelect();
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnGoapGoalSelect"))
@@ -77,6 +85,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnGoapGoalSelectDelegate OnGoapGoalSelectDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnPreGoapGoalSelectDelegate OnPreGoapGoalSelectDelegate;
 
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

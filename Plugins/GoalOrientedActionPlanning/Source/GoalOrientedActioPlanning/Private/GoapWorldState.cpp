@@ -84,6 +84,24 @@ bool FGoapWorldState::SetStateValue(FGameplayTag StatName, bool StateValue /*= f
 	return true;
 }
 
+bool FGoapWorldState::GetStateValue(FGameplayTag StatName, bool& StateValue, bool IgnoreUsedFlag)
+{
+	int NotFindResult = -1;
+	int Pos = NamesTable.FindRef(StatName, NotFindResult);
+
+	if (Pos == NotFindResult)
+		return false;
+
+	int64 mask = 1i64 << Pos;
+
+	if((NotUsedFlag & mask) != 0 && !IgnoreUsedFlag)
+		return false;
+
+	StateValue = !!(Values & mask);
+
+	return true;
+}
+
 int FGoapWorldState::CalcCorrelation(const FGoapWorldState& to)
 {
 	int64 UseFlag = ~to.NotUsedFlag;

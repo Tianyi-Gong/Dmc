@@ -56,7 +56,8 @@ public:
 	void InitaData(TSubclassOf<UGoapWorldStateRuntimeSettings> InGoapWorldStateRuntimeSettingClass);
 
 	bool SetStateValue(FGameplayTag StatName, bool StateValue = false);
-	
+	bool GetStateValue(FGameplayTag StatName, bool& StateValue, bool IgnoreUsedFlag = false);
+
 	int CalcCorrelation(const FGoapWorldState& to);
 
 	void SetValues(int64 inValues);

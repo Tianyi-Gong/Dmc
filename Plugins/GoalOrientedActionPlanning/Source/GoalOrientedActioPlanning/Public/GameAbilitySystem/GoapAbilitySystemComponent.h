@@ -61,6 +61,7 @@ public:
 	void ClearAbilityAndRemoveFormAbilityGroup(const FAbilityCDConfig& AbilityCDConfig);
 
 	FGameplayAbilitySpecHandle TryActiveAbilityByWeightFromAbilityGroup(FGameplayTag AbilityGroup);
+	bool GetAbilityGroupInfo(FGameplayTag AbilityGroup,int& CDAbilityCount, int& AbilityCount);
 
 	virtual bool GetShouldTick() const override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

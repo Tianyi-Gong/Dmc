@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AnimNotify/AIComboAttackCheckAnimNotify.h"
-#include "Kismet/KismetSystemLibrary.h"
-#include "Kismet/KismetMathLibrary.h"
+#include "AnimNotify\AIComboAttackCheckAnimNotify.h"
+#include "Kismet\KismetSystemLibrary.h"
+#include "Kismet\KismetMathLibrary.h"
 #include "GameFramework/Character.h"
 #include "Runtime\AIModule\Classes\AIController.h"
 #include "Runtime\AIModule\Classes\BehaviorTree\BlackboardComponent.h"
@@ -72,6 +72,16 @@ void UAIComboAttackCheckAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAn
 				}
 			}
 			break;
+			case EAIComboAttackType::Chance:
+			{
+				int randValue = FMath::RandHelper(99);
+				if(Chance > randValue)
+				{
+					CheckResult = true;
+				}
+			}
+			break;
+
 			case EAIComboAttackType::AngleCheck:
 			default:
 			{

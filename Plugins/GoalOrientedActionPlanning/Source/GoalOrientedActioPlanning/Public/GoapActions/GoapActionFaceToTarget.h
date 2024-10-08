@@ -28,6 +28,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	FName TargetActorKey = "TargetActor";
 
+	UPROPERTY(EditAnywhere)
+	FName MotionWarpingTag;
+
 	UAnimMontage* SelectTurnAnimMontage(float DelatPaw);
 
 	virtual void OnActionActive() override;

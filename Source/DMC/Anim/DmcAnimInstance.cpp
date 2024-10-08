@@ -86,3 +86,8 @@ EMoveDirection2Way UDmcAnimInstance::SelectDirection2WayFromAngle(float Angle, f
 		return (EMoveDirection2Way)DirectionInt;
 	}
 }
+
+void UDmcAnimInstance::NativeBeginPlay()
+{
+	Super::NativeBeginPlay();
+}

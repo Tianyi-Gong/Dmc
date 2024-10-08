@@ -11,7 +11,8 @@ UENUM(BlueprintType)
 enum class EAIComboAttackType : uint8
 {
 	AngleCheck,
-	SphereTrace
+	SphereTrace,
+	Chance
 };
 /**
  * 
@@ -38,6 +39,9 @@ public:
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, meta = (EditCondition = "AIComboAttackType == EAIComboAttackType::AngleCheck", EditConditionHides))
 	float AngleDifference = 90;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, meta = (EditCondition = "AIComboAttackType == EAIComboAttackType::Chance", EditConditionHides))
+	float Chance;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	FName TargetActorBlackBoardkey = "TargetActor";

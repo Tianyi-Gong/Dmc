@@ -17,7 +17,7 @@ enum class EGoapActionResult : uint8
 	InProgress
 };
 
-UCLASS(config = Game, BlueprintType, Blueprintable)
+UCLASS(config = Game, BlueprintType, Blueprintable, Abstract)
 class GOALORIENTEDACTIONPLANNING_API UGoapAction : public UObject
 {
 	GENERATED_BODY()
@@ -53,10 +53,10 @@ public:
 	FGoapWorldState Effect;
 
 	UPROPERTY(EditAnywhere)
-	bool bCanInterruptGoal;
+	bool bCanInterruptAction;
 
-	UPROPERTY(EditAnywhere, meta=(EditCondition="bCanInterruptGoal", EditConditionHides))
-	TArray<FGoapWorldStateValueConfig> InterruptGoalValueConfig;
+	UPROPERTY(EditAnywhere, meta=(EditCondition="bCanInterruptAction", EditConditionHides))
+	TArray<FGoapWorldStateValueConfig> InterruptActionValueConfig;
 
 	virtual void AgentGoapStateChange(const FGoapWorldState& PreGoapWorldState, const FGoapWorldState& CurGoapWorldState);
 	//UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "AgentGoapStateChange"))

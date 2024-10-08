@@ -143,6 +143,32 @@ FGameplayAbilitySpecHandle UGoapAbilitySystemComponent::TryActiveAbilityByWeight
 	return ActiveGameplayAbilitySpecHandle;
 }
 
+bool UGoapAbilitySystemComponent::GetAbilityGroupInfo(FGameplayTag AbilityGroup, int& CDAbilityCount, int& AbilityCount)
+{
+	bool FindResult = false;
+	if (TArray<FAbilityCDData>* AbilityCDDataListPtr = AbilityGroupDataMap.Find(AbilityGroup))
+	{
+		FindResult = true;
+		AbilityCount = AbilityCDDataListPtr->Num();
+
+		CDAbilityCount = 0;
+		for (auto& AbilityCDData : *AbilityCDDataListPtr)
+		{
+			if(AbilityCDData.IsCoolDownComplete())
+			{
+				CDAbilityCount++;
+			}
+		}
+	}
+	else
+	{
+		CDAbilityCount = 0;
+		AbilityCount = 0;
+	}
+
+	return FindResult;
+}
+
 bool UGoapAbilitySystemComponent::GetShouldTick() const
 {
 	bool ShouldTick = Super::GetShouldTick();

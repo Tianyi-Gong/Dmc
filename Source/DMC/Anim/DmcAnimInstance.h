@@ -111,4 +111,6 @@ public:
 
 	UFUNCTION(BlueprintPure, meta = (BlueprintThreadSafe))
 	EMoveDirection2Way SelectDirection2WayFromAngle(float Angle, float DeadZoe, EMoveDirection2Way CurrenrtDirection, bool CurrentIsMove);
+
+	virtual void NativeBeginPlay() override;
 };

@@ -45,6 +45,10 @@ void UGoapGoal::AgentGoapStateChange(const FGoapWorldState& PreGoapWorldState, c
 	if(bCanInterruptGoal)
 	{
 		int64 diff = (PreGoapWorldState.Values & ~PreGoapWorldState.NotUsedFlag) ^ (CurGoapWorldState.Values & ~CurGoapWorldState.NotUsedFlag);
+		//int64 diff = PreGoapWorldState.Values ^ CurGoapWorldState.Values;
+
+		if(diff == 0)
+			return;
 
 		for (auto InterruptGoalValue : InterruptGoalValueConfig)
 		{

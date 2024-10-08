@@ -16,6 +16,15 @@ public:
 	UPROPERTY(EditAnywhere)
 	TArray<FAbilityCDConfig> AbilityConfigList;
 
+	UPROPERTY(EditAnywhere)
+	bool bUpdateCostByAbilityGroupCDInfo;
+
+	UPROPERTY(EditAnywhere, meta=(EditCondition="bUpdateCostByAbilityGroupCDInfo", EditConditionHides))
+	FGameplayTag CheckAbilityGroupGameplayTag;
+
+	UFUNCTION(BlueprintCallable)
+	void MotionWarpingToTarget(FName MotionWarpingTage, FName TargetActorKey);
+
 	UFUNCTION(BlueprintCallable)
 	void ActiveAbilityByAbilityGroupTag(FGameplayTag GameplayTag,bool& bResult, FGameplayAbilitySpecHandle& GameplayAbilitySpecHandle);
 
@@ -24,6 +33,8 @@ public:
 	void UnInitAbilityData();
 
 	void OnAbilityEndDelegate(const FAbilityEndedData& AbilityEndedData);
+
+	virtual void UpdateDynamicCostByGoapState(const FGoapWorldState& GoapWorldState) override;
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnAbilityEndDelegate"))
 	void ReciveOnAbilityEndDelegate(const FGameplayAbilitySpecHandle& GameplayAbilitySpecHandle, bool bWasCancelled);

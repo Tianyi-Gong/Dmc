@@ -7,12 +7,22 @@ AGoapAgentCharacter::AGoapAgentCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	AbilitySystemComponent = CreateDefaultSubobject<UGoapAbilitySystemComponent>(TEXT("AbilitySystem"));
+
+	AIAttributeSetBase = CreateDefaultSubobject<UAIAttributeSetBase>(TEXT("AIAttributeSetBase"));
+
+	AIAttributeSetBase->InitHealth(100);
+	AIAttributeSetBase->InitMaxHealth(100);
+	//AIAttributeSetBase->InitMaxPoise(100);
+	//AIAttributeSetBase->InitPoise(0);
 }
 
 // Called when the game starts or when spawned
 void AGoapAgentCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	//AbilitySystemComponent->InitAbilityActorInfo(this, this);
+	//AbilitySystemComponent->AddSpawnedAttribute(AIAttributeSetBase);
 }
 
 // Called every frame

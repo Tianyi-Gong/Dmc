@@ -62,6 +62,16 @@ void UGoapActionSet::UpdateCanUsedGoapActionPool(FGameplayTag CanUsedGoapActionT
 			GoapAction->SetGoapActionResult(EGoapActionResult::Invalid);
 		}
 	}
+
+	//if(CanUsedGoapActionPool.Num() <= 1)
+	//	return;
+
+	//for (int index = CanUsedGoapActionPool.Num() - 1; index > 0; index--)
+	//{
+	//	int ToIndex = FMath::RandRange(0, index);
+
+	//	CanUsedGoapActionPool.Swap(ToIndex,index);
+	//}
 }
 
 bool UGoapActionSet::GetPossibleTrans(FGoapAstarNode* CurNode, FGoapWorldState& From, FGoapWorldState& To, TArray<FGoapAstarNode *>& outGoapActionArray)

@@ -11,7 +11,7 @@ struct GOALORIENTEDACTIONPLANNING_API FGoapGoalConfigData
 	GENERATED_USTRUCT_BODY()
 public:
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<UGoapGoal> GoapGoalClass;
+	TArray<TSubclassOf<UGoapGoal>> GoapGoalClass;
 
 	UPROPERTY(EditAnywhere)
 	int Index;
@@ -19,6 +19,18 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	int Priority;
 };
+
+USTRUCT(BlueprintType)
+struct GOALORIENTEDACTIONPLANNING_API FGoapGoalSubGroup
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY()
+	TArray<UGoapGoal*> GoapGoalSupGroup;
+
+	void ShuffleGroup();
+};
+
 
 UCLASS(config = Game, BlueprintType, Blueprintable)
 class GOALORIENTEDACTIONPLANNING_API UGoapGoalSet : public UObject
@@ -29,7 +41,7 @@ public:
 	TSubclassOf<UGoapWorldStateRuntimeSettings> GoapWorldStateRuntimeSettingClass;
 
 	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly)
-	TArray<UGoapGoal*> GoapGoalPool;
+	TArray<FGoapGoalSubGroup> GoapGoalPool;
 
 	UPROPERTY(EditAnywhere)
 	TArray<FGoapGoalConfigData> GoapGoalConfig;

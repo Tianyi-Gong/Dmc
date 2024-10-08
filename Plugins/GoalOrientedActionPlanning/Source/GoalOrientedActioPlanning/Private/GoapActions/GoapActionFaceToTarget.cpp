@@ -1,9 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "GameFramework/Character.h"
 #include "GoapActions/GoapActionFaceToTarget.h"
+#include "GameFramework/Character.h"
 #include "Runtime\AIModule\Classes\BehaviorTree\BlackboardComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "MotionWarpingComponent.h"
 
 UAnimMontage* UGoapActionFaceToTarget::SelectTurnAnimMontage(float DelatPaw)
 {
@@ -58,6 +59,11 @@ void UGoapActionFaceToTarget::OnActionActive()
 	UAnimInstance* AnimInstance = ControlledCharacter->GetMesh()->GetAnimInstance();
 	if(AnimInstance == nullptr)
 		EndAction(EGoapActionResult::Failed);
+
+	if (UMotionWarpingComponent* MotionWarpingComponent = ControlledPawn->GetComponentByClass<UMotionWarpingComponent>())
+	{
+		MotionWarpingComponent->AddOrUpdateWarpTargetFromLocationAndRotation(MotionWarpingTag, FVector::ZeroVector, LockRotator);
+	}
 
 	AnimInstance->Montage_Play(AnimMontage,PlayRate);
 
