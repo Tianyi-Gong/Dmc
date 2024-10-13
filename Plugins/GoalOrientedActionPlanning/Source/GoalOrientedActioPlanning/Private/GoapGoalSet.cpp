@@ -7,11 +7,11 @@ void UGoapGoalSet::InitData(AAIController* Controller)
 
 	TArray<FSoftObjectPath> LoadPath;
 
-	for (auto GoapGoalConfigData : GoapGoalConfig)
+	for (auto GoapGoalConfigGroupData : GoapGoalConfig)
 	{
-		for (auto LoadGoapGoalClass : GoapGoalConfigData.GoapGoalClass)
+		for (auto GoapGoalConfigData : GoapGoalConfigGroupData.GoapGoalConfigDataList)
 		{
-			LoadPath.Add(FSoftObjectPath(LoadGoapGoalClass->GetClassPathName()));
+			LoadPath.Add(FSoftObjectPath(GoapGoalConfigData.GoapGoalClass->GetClassPathName()));
 		}
 	}
 
@@ -22,21 +22,28 @@ void UGoapGoalSet::InitData(AAIController* Controller)
 		{
 			GoapGoalPool.Empty();
 
-			for (auto GoapGoalConfigData : GoapGoalConfig)
+			for (auto GoapGoalConfigGroupData : GoapGoalConfig)
 			{
 				FGoapGoalSubGroup GoapGoalSubGroup;
-				for (auto LoadGoapGoalClass : GoapGoalConfigData.GoapGoalClass)
+				GoapGoalSubGroup.bRandBeforSelectGoal = GoapGoalConfigGroupData.bRandBeforSelectGoal;
+				GoapGoalSubGroup.bRandByWeight = GoapGoalConfigGroupData.bRandByWeight;
+
+				for (auto GoapGoalConfigData : GoapGoalConfigGroupData.GoapGoalConfigDataList)
 				{
-					UGoapGoal* GoapGoal = NewObject<UGoapGoal>(GetOuter(), LoadGoapGoalClass);
+					UGoapGoal* GoapGoal = NewObject<UGoapGoal>(GetOuter(), GoapGoalConfigData.GoapGoalClass);
 
 					if (GoapGoal)
 					{
 						check(GoapGoal->GoapWorldStateRuntimeSettingClass == GoapWorldStateRuntimeSettingClass)
 							if (GoapGoal->GoapWorldStateRuntimeSettingClass == GoapWorldStateRuntimeSettingClass)
 							{
+								FGoapGoalSubGroupData GoapGoalSubGroupData;
+								GoapGoalSubGroupData.GoapGoalData = GoapGoal;
+								GoapGoalSubGroupData.Weight = GoapGoalConfigData.Weight > 0 ? GoapGoalConfigData.Weight : 1;
+
 								GoapGoal->InitGoapState();
 								GoapGoal->InitControlerData(AIController);
-								GoapGoalSubGroup.GoapGoalSupGroup.Add(GoapGoal);
+								GoapGoalSubGroup.GoapGoalSupGroup.Add(GoapGoalSubGroupData);
 							}
 					}
 				}
@@ -52,8 +59,9 @@ UGoapGoal* UGoapGoalSet::SelectGoalByWorldState(const FGoapWorldState& GoapWorld
 	for (auto GoapSubGroup : GoapGoalPool)
 	{
 		GoapSubGroup.ShuffleGroup();
-		for(auto GoapGoal : GoapSubGroup.GoapGoalSupGroup)
+		for(auto GoapGoalSubGroupData : GoapSubGroup.GoapGoalSupGroup)
 		{
+			UGoapGoal* GoapGoal = GoapGoalSubGroupData.GoapGoalData;
 			int64 CareFlag = ~GoapGoal->Precondition.NotUsedFlag;
 			if ((GoapGoal->Precondition.Values & CareFlag) == (GoapWorldState.Values & CareFlag))
 			{
@@ -74,18 +82,18 @@ void UGoapGoalSet::PostEditChangeProperty(struct FPropertyChangedEvent& Property
 	if (PropertyChangedEvent.Property != nullptr)
 	{
 		const FName PropertyName(PropertyChangedEvent.Property->GetFName());
-		if (PropertyName == GET_MEMBER_NAME_CHECKED(FGoapGoalConfigData, Index))
+		if (PropertyName == GET_MEMBER_NAME_CHECKED(FGoapGoalConfigGroupData, Index))
 		{
-			for (auto& GoapGoalConfigData : GoapGoalConfig)
+			for (auto& GoapGoalConfigGroupData : GoapGoalConfig)
 			{
-				if(GoapGoalConfigData.Index * 2 != GoapGoalConfigData.Priority)
+				if(GoapGoalConfigGroupData.Index * 2 != GoapGoalConfigGroupData.Priority)
 				{
-					GoapGoalConfigData.Priority = (GoapGoalConfigData.Index - 1) * 2 + 1;
+					GoapGoalConfigGroupData.Priority = (GoapGoalConfigGroupData.Index - 1) * 2 + 1;
 				}
 			}
 
 			GoapGoalConfig.Sort(
-				[](const FGoapGoalConfigData& A, const FGoapGoalConfigData& B)
+				[](const FGoapGoalConfigGroupData& A, const FGoapGoalConfigGroupData& B)
 				{
 					return A.Priority < B.Priority;
 				});
@@ -105,10 +113,31 @@ void UGoapGoalSet::PostEditChangeProperty(struct FPropertyChangedEvent& Property
 			}
 
 			GoapGoalConfig.Sort(
-				[](const FGoapGoalConfigData& A, const FGoapGoalConfigData& B)
+				[](const FGoapGoalConfigGroupData& A, const FGoapGoalConfigGroupData& B)
 				{
 					return A.Priority < B.Priority;
 				});
+		}
+		else if(PropertyName == GET_MEMBER_NAME_CHECKED(FGoapGoalConfigGroupData, bRandBeforSelectGoal) ||
+				PropertyName == GET_MEMBER_NAME_CHECKED(FGoapGoalConfigGroupData, bRandByWeight))
+		{
+			for (auto& GoapGoalConfigGroupData : GoapGoalConfig)
+			{
+				if(GoapGoalConfigGroupData.bRandBeforSelectGoal && GoapGoalConfigGroupData.bRandByWeight)
+				{
+					for (auto& GoapGoalConfigData : GoapGoalConfigGroupData.GoapGoalConfigDataList)
+					{
+						GoapGoalConfigData.bCanConfigWeight = true;
+					}
+				}
+				else if(!GoapGoalConfigGroupData.bRandBeforSelectGoal || !GoapGoalConfigGroupData.bRandByWeight)
+				{
+					for (auto& GoapGoalConfigData : GoapGoalConfigGroupData.GoapGoalConfigDataList)
+					{
+						GoapGoalConfigData.bCanConfigWeight = false;
+					}
+				}
+			}
 		}
 	}
 }
@@ -116,13 +145,42 @@ void UGoapGoalSet::PostEditChangeProperty(struct FPropertyChangedEvent& Property
 
 void FGoapGoalSubGroup::ShuffleGroup()
 {
-	if(GoapGoalSupGroup.Num() <= 1)
+	if(GoapGoalSupGroup.Num() <= 1 || !bRandBeforSelectGoal)
 		return;
 
-	for (int index = GoapGoalSupGroup.Num() - 1; index > 0; index--)
-	{
-		int ToIndex = FMath::RandRange(0, index);
 
-		GoapGoalSupGroup.Swap(ToIndex, index);
+	if(!bRandByWeight)
+	{
+		for (int Index = GoapGoalSupGroup.Num() - 1; Index > 0; Index--)
+		{
+			int ToIndex = FMath::RandRange(0, Index);
+
+			GoapGoalSupGroup.Swap(ToIndex, Index);
+		}
 	}
+	else
+	{
+		int SumWeight = -1;
+		for(auto& GoapGoalSupGroupData : GoapGoalSupGroup)
+		{
+			SumWeight += GoapGoalSupGroupData.Weight;
+		}
+
+		for (int Index = GoapGoalSupGroup.Num() - 1; Index > 0; Index--)
+		{
+			int RandValue = FMath::RandRange(0, SumWeight);
+
+			for (int SwapIndex = 0; SwapIndex <= Index; SwapIndex++)
+			{
+				RandValue -= GoapGoalSupGroup[SwapIndex].Weight;
+				if(RandValue < 0)
+				{
+					SumWeight -= GoapGoalSupGroup[SwapIndex].Weight;
+					GoapGoalSupGroup.Swap(SwapIndex, Index);
+					break;
+				}
+			}
+		}
+	}
+
 }

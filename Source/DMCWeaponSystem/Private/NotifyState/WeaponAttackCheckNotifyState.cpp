@@ -6,7 +6,11 @@
 
 void UWeaponAttackCheckNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
-	FindComponents = MeshComp->GetOwner()->K2_GetComponentsByClass(UWeaponMeshComponent::StaticClass());
+	AActor* OwnerActor = MeshComp->GetOwner();
+	if(OwnerActor == nullptr)
+		return;
+		
+	TArray<UActorComponent*> FindComponents = OwnerActor->K2_GetComponentsByClass(UWeaponMeshComponent::StaticClass());
 
 	if(FindComponents.Num() == 0)
 		return;
@@ -24,6 +28,12 @@ void UWeaponAttackCheckNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp
 
 void UWeaponAttackCheckNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
+	AActor* OwnerActor = MeshComp->GetOwner();
+	if (OwnerActor == nullptr)
+		return;
+
+	TArray<UActorComponent*> FindComponents = MeshComp->GetOwner()->K2_GetComponentsByClass(UWeaponMeshComponent::StaticClass());
+
 	if (FindComponents.Num() == 0)
 		return;
 

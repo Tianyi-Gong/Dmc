@@ -11,13 +11,45 @@ struct GOALORIENTEDACTIONPLANNING_API FGoapGoalConfigData
 	GENERATED_USTRUCT_BODY()
 public:
 	UPROPERTY(EditAnywhere)
-	TArray<TSubclassOf<UGoapGoal>> GoapGoalClass;
+	TSubclassOf<UGoapGoal> GoapGoalClass;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bCanConfigWeight;
+
+	UPROPERTY(EditAnywhere, meta = (EditCondition = "bCanConfigWeight", EditConditionHides ))
+	int Weight = 1;
+};
+
+USTRUCT(BlueprintType)
+struct GOALORIENTEDACTIONPLANNING_API FGoapGoalConfigGroupData
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere)
+	TArray<FGoapGoalConfigData> GoapGoalConfigDataList;
 
 	UPROPERTY(EditAnywhere)
 	int Index;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	int Priority;
+
+	UPROPERTY(EditAnywhere)
+	bool bRandBeforSelectGoal;
+
+	UPROPERTY(EditAnywhere, meta = (EditCondition = "bRandBeforSelectGoal", EditConditionHides))
+	bool bRandByWeight;
+};
+
+USTRUCT(BlueprintType)
+struct GOALORIENTEDACTIONPLANNING_API FGoapGoalSubGroupData
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY()
+	UGoapGoal* GoapGoalData;
+
+	int Weight;
 };
 
 USTRUCT(BlueprintType)
@@ -26,7 +58,13 @@ struct GOALORIENTEDACTIONPLANNING_API FGoapGoalSubGroup
 	GENERATED_USTRUCT_BODY()
 public:
 	UPROPERTY()
-	TArray<UGoapGoal*> GoapGoalSupGroup;
+	TArray<FGoapGoalSubGroupData> GoapGoalSupGroup;
+
+	UPROPERTY()
+	bool bRandBeforSelectGoal;
+
+	UPROPERTY()
+	bool bRandByWeight;
 
 	void ShuffleGroup();
 };
@@ -44,7 +82,7 @@ public:
 	TArray<FGoapGoalSubGroup> GoapGoalPool;
 
 	UPROPERTY(EditAnywhere)
-	TArray<FGoapGoalConfigData> GoapGoalConfig;
+	TArray<FGoapGoalConfigGroupData> GoapGoalConfig;
 
 	UFUNCTION(BlueprintCallable)
 	void InitData(AAIController* Controller);

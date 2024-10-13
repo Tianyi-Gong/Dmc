@@ -137,7 +137,11 @@ FGameplayAbilitySpecHandle UGoapAbilitySystemComponent::TryActiveAbilityByWeight
 			}
 		}
 
-		TryActivateAbility(ActiveGameplayAbilitySpecHandle);
+		 if(!TryActivateAbility(ActiveGameplayAbilitySpecHandle))
+		 {
+			CancelAbilityHandle(ActiveGameplayAbilitySpecHandle);
+			return FGameplayAbilitySpecHandle();
+		 }
 	}
 
 	return ActiveGameplayAbilitySpecHandle;

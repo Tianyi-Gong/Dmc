@@ -51,7 +51,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UBlackboardData> BlackboardAsset;
 
-	UPROPERTY(Transient)
+	UPROPERTY()
 	UGoapGoal* CurGoapGoal;
 
 	TQueue<UGoapAction*> PlannAction;

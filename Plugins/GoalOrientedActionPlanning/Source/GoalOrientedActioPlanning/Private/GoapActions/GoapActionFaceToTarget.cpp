@@ -43,6 +43,9 @@ void UGoapActionFaceToTarget::OnActionActive()
 	if(TargetActor == nullptr)
 		EndAction(EGoapActionResult::Failed);
 
+	if(GoapActionResult != EGoapActionResult::InProgress)
+		return;
+
 	FVector ControllerCharLocation2D = ControlledCharacter->GetActorLocation() * FVector(1,1,0);
 	FVector TargetActorLocation2D = TargetActor->GetActorLocation() * FVector(1, 1, 0);
 

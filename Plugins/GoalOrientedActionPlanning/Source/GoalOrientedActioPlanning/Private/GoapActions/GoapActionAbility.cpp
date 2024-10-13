@@ -3,13 +3,21 @@
 #include "GameplayAbilitySpec.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "MotionWarpingComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
+
+static bool GAttackWarpingDebug = false;
+static FAutoConsoleVariableRef CVarAIComboAttackCheckDebugType(
+    TEXT("Weapon.AttackWarpingDebug"),
+    GAttackWarpingDebug,
+    TEXT(" 0=Disable 1=Enable")
+);
 
 UGoapActionAbility::~UGoapActionAbility()
 {
     UnInitAbilityData();
 }
 
-void UGoapActionAbility::MotionWarpingToTarget(FName MotionWarpingTag, FName TargetActorKey)
+void UGoapActionAbility::MotionWarpingToTarget(FName MotionWarpingTag, FName TargetActorKey, bool bWarpingLocation, float PredictTargetLocationTime, float PredictTargetLocationOffset)
 {
     if(MotionWarpingTag == "None" || TargetActorKey == "None" || ControlledPawn == nullptr)
         return;
@@ -31,12 +39,27 @@ void UGoapActionAbility::MotionWarpingToTarget(FName MotionWarpingTag, FName Tar
         FVector ControllerCharLocation2D = ControlledPawn->GetActorLocation() * FVector(1, 1, 0);
         FVector TargetActorLocation2D = TargetActor->GetActorLocation() * FVector(1, 1, 0);
 
+        FVector LockLocation;
+        if(bWarpingLocation)
+        {
+            FVector TargetActorPredictTargetLocation2D = TargetActor->GetActorLocation() + (TargetActor->GetVelocity() * PredictTargetLocationTime * FVector(1,1,0));
+            LockLocation = TargetActorPredictTargetLocation2D - (ControlledPawn->GetActorLocation() - TargetActorPredictTargetLocation2D).GetSafeNormal2D() * PredictTargetLocationOffset;
+            TargetActorLocation2D = LockLocation * FVector(1,1,0);
+           
+
+            if(GAttackWarpingDebug)
+            {
+                UKismetSystemLibrary::DrawDebugSphere(ControlledPawn, TargetActorPredictTargetLocation2D, 16, 12, FLinearColor::Yellow, 5);
+                UKismetSystemLibrary::DrawDebugSphere(ControlledPawn, LockLocation, 16, 12, FLinearColor::Green, 5);
+            }
+        }
+
         FRotator LockRotator = UKismetMathLibrary::FindLookAtRotation(ControllerCharLocation2D, TargetActorLocation2D);
         FRotator ControllerCharRotator = ControlledPawn->GetActorRotation();
 
         float DeltaAngle = FMath::FindDeltaAngleDegrees(ControllerCharRotator.Yaw, LockRotator.Yaw);
 
-        MotionWarpingComponent->AddOrUpdateWarpTargetFromLocationAndRotation(MotionWarpingTag, FVector::ZeroVector, LockRotator);
+        MotionWarpingComponent->AddOrUpdateWarpTargetFromLocationAndRotation(MotionWarpingTag, LockLocation, LockRotator);
     }
 }
 

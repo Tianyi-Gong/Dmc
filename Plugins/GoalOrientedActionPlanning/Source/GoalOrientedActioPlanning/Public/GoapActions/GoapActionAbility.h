@@ -23,7 +23,7 @@ public:
 	FGameplayTag CheckAbilityGroupGameplayTag;
 
 	UFUNCTION(BlueprintCallable)
-	void MotionWarpingToTarget(FName MotionWarpingTage, FName TargetActorKey);
+	void MotionWarpingToTarget(FName MotionWarpingTage, FName TargetActorKey, bool bWarpingLocation = false, float PredictTargetLocationTime = 0 , float PredictTargetLocationOffset = 0);
 
 	UFUNCTION(BlueprintCallable)
 	void ActiveAbilityByAbilityGroupTag(FGameplayTag GameplayTag,bool& bResult, FGameplayAbilitySpecHandle& GameplayAbilitySpecHandle);
